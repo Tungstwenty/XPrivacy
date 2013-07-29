@@ -44,13 +44,13 @@ public class XRuntime extends XHook {
 				String command = TextUtils.join(" ", progs);
 				if ((mCommand == null && !command.startsWith("sh") && !command.startsWith("su"))
 						|| (mCommand != null && command.startsWith(mCommand)))
-					if (isRestricted(param, mCommand == null ? getMethodName() : mCommand))
+					if (isRestricted(mCommand == null ? getMethodName() : mCommand))
 						param.setThrowable(new IOException());
 			}
 		} else if (methodName.equals("load") || methodName.equals("loadLibrary")) {
 			// Skip pre Android
 			if (Process.myUid() != 0)
-				if (isRestricted(param))
+				if (isRestricted())
 					param.setResult(new UnsatisfiedLinkError());
 		} else
 			Util.log(this, Log.WARN, "Unknown method=" + methodName);

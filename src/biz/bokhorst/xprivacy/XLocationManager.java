@@ -73,7 +73,6 @@ public class XLocationManager extends XHook {
 		}
 	}
 
-	@Override
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		Context context = null;
 		try {

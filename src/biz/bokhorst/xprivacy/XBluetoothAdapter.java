@@ -27,7 +27,7 @@ public class XBluetoothAdapter extends XHook {
 	@Override
 	protected void after(MethodHookParam param) throws Throwable {
 		if (param.getResult() != null)
-			if (isRestricted(param)) {
+			if (isRestricted()) {
 				String methodName = param.method.getName();
 				if (methodName.equals("getAddress"))
 					param.setResult(PrivacyManager.getDefacedProp("MAC"));

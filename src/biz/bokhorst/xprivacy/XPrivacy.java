@@ -35,7 +35,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
 	public void initZygote(StartupParam startupParam) throws Throwable {
 		// Log load
-		Util.log(null, Log.INFO, String.format("load %s", startupParam.modulePath));
+		Util.log(Log.INFO, String.format("load %s", startupParam.modulePath));
 
 		// Set preferences readable
 		// For compatibility with older versions
@@ -145,24 +145,13 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 		hook(new XProcessBuilder("start", PrivacyManager.cShell, new String[] {}, null), "java.lang.ProcessBuilder");
 
 		// Settings secure
-		hook(new XSettingsSecure("getString", PrivacyManager.cIdentification), "android.provider.Settings.Secure");
+		XSettingsSecure.installHooks();
 
 		// SMS manager
-		hook(new XSmsManager("getAllMessagesFromIcc", PrivacyManager.cMessages, new String[] { "RECEIVE_SMS" }),
-				"android.telephony.SmsManager");
-		String[] smses = new String[] { "sendDataMessage", "sendMultipartTextMessage", "sendTextMessage" };
-		for (String sms : smses)
-			hook(new XSmsManager(sms, PrivacyManager.cCalling, new String[] { "SEND_SMS" }),
-					"android.telephony.SmsManager");
+		XSmsManager.installHooks();
 
 		// System properties
-		String[] props = new String[] { "ro.gsm.imei", "net.hostname", "ro.serialno", "ro.boot.serialno",
-				"ro.boot.wifimacaddr", "ro.boot.btmacaddr" };
-		String[] getters = new String[] { "get", "getBoolean", "getInt", "getLong" };
-		for (String prop : props)
-			for (String getter : getters)
-				hook(new XSystemProperties(getter, PrivacyManager.cIdentification, new String[] {}, prop),
-						"android.os.SystemProperties");
+		XSystemProperties.installHooks();
 
 		// Telephony
 		hook(new XTelephonyManager("disableLocationUpdates", PrivacyManager.cLocation,
@@ -187,14 +176,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 					"android.telephony.TelephonyManager");
 
 		// Wi-Fi manager
-		String[] wifis = new String[] { "getConfiguredNetworks", "getConnectionInfo", "getDhcpInfo", "getScanResults" };
-		for (String wifi : wifis)
-			hook(new XWifiManager(wifi, PrivacyManager.cNetwork, new String[] { "ACCESS_WIFI_STATE" }),
-					"android.net.wifi.WifiManager");
-		hook(new XWifiManager("getScanResults", PrivacyManager.cLocation, new String[] { "ACCESS_WIFI_STATE" }),
-				"android.net.wifi.WifiManager");
-		// This is to fake "offline", no permission required
-		hook(new XWifiManager("getConnectionInfo", PrivacyManager.cInternet, null), "android.net.wifi.WifiManager");
+		XWifiManager.installHooks();
 
 		// Intent receive: calling
 		hook(new XActivityThread("handleReceiver", PrivacyManager.cPhone, new String[] { "PROCESS_OUTGOING_CALLS" },
@@ -235,7 +217,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
 	public void handleLoadPackage(final LoadPackageParam lpparam) throws Throwable {
 		// Log load
-		Util.log(null, Log.INFO, String.format("load package=%s uid=%d", lpparam.packageName, Process.myUid()));
+		Util.log(Log.INFO, String.format("load package=%s uid=%d", lpparam.packageName, Process.myUid()));
 
 		// Skip hooking self
 		String self = XPrivacy.class.getPackage().getName();
@@ -299,19 +281,19 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 					"com.android.providers.userdictionary.UserDictionaryProvider");
 	}
 
-	private void hook(final XHook hook, String className) {
+	public static void hook(final XHook hook, String className) {
 		hook(hook, null, className, true);
 	}
 
-	private void hook(final XHook hook, String className, boolean visible) {
+	public static void hook(final XHook hook, String className, boolean visible) {
 		hook(hook, null, className, visible);
 	}
 
-	private void hook(final XHook hook, ClassLoader classLoader, String className) {
+	public static void hook(final XHook hook, ClassLoader classLoader, String className) {
 		hook(hook, classLoader, className, true);
 	}
 
-	private void hook(final XHook hook, ClassLoader classLoader, String className, boolean visible) {
+	public static void hook(final XHook hook, ClassLoader classLoader, String className, boolean visible) {
 		try {
 			// Create hook method
 			XC_MethodHook methodHook = new XC_MethodHook() {
@@ -320,7 +302,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 					try {
 						hook.before(param);
 					} catch (Throwable ex) {
-						Util.bug(null, ex);
+						Util.bug(ex);
 						report(ex);
 						throw ex;
 					}
@@ -333,7 +315,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 					try {
 						hook.after(param);
 					} catch (Throwable ex) {
-						Util.bug(null, ex);
+						Util.bug(ex);
 						report(ex);
 						throw ex;
 					}
@@ -343,7 +325,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 			// Find class
 			Class<?> hookClass = findClass(className, classLoader);
 			if (hookClass == null) {
-				Util.log(hook, Log.WARN,
+				Util.log(hook.getClass(), Log.WARN,
 						String.format("%s: class not found: %s", AndroidAppHelper.currentPackageName(), className));
 				return;
 			}
@@ -363,7 +345,7 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 			// Check if found
 			if (hookSet.isEmpty()) {
 				Util.log(
-						hook,
+						hook.getClass(),
 						Log.WARN,
 						String.format("%s: method not found: %s.%s", AndroidAppHelper.currentPackageName(),
 								hookClass.getName(), hook.getMethodName()));
@@ -372,17 +354,17 @@ public class XPrivacy implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
 			// Log
 			for (XC_MethodHook.Unhook unhook : hookSet) {
-				Util.log(hook, Log.INFO, String.format("%s: hooked %s.%s/%s (%d)",
+				Util.log(hook.getClass(), Log.INFO, String.format("%s: hooked %s.%s/%s (%d)",
 						AndroidAppHelper.currentPackageName(), hookClass.getName(), unhook.getHookedMethod().getName(),
 						hook.getRestrictionName(), hookSet.size()));
 				break;
 			}
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 	}
 
-	private void report(Throwable ex) {
+	private static void report(Throwable ex) {
 		Context context = AndroidAppHelper.currentApplication();
 		if (context != null) {
 			Toast toast = Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG);

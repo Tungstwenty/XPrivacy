@@ -12,7 +12,12 @@ import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 
 public class XSettingsSecure extends XHook {
 
-	public XSettingsSecure(String methodName, String restrictionName) {
+	public static void installHooks() {
+		XPrivacy.hook(new XSettingsSecure("getString", PrivacyManager.cIdentification),
+			"android.provider.Settings.Secure");
+	}
+
+	private XSettingsSecure(String methodName, String restrictionName) {
 		super(methodName, restrictionName, new String[] {}, null);
 	}
 
@@ -39,7 +44,6 @@ public class XSettingsSecure extends XHook {
 		}
 	}
 
-	@Override
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		ContentResolver contentResolver = (ContentResolver) param.args[0];
 		Context context = null;

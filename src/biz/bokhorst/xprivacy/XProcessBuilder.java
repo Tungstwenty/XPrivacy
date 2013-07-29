@@ -30,7 +30,7 @@ public class XProcessBuilder extends XHook {
 			String command = TextUtils.join(" ", listProg);
 			if ((mCommand == null && !command.startsWith("sh") && !command.startsWith("su"))
 					|| (mCommand != null && command.startsWith(mCommand)))
-				if (isRestricted(param, mCommand == null ? getMethodName() : mCommand))
+				if (isRestricted(mCommand == null ? getMethodName() : mCommand))
 					param.setThrowable(new IOException());
 		}
 	}

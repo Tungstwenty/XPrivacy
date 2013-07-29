@@ -96,7 +96,6 @@ public class XAccountManager extends XHook {
 						Util.log(this, Log.WARN, "Unknown method=" + methodName);
 	}
 
-	@Override
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		Context context = null;
 		try {

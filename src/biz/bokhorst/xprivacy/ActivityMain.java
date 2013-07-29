@@ -226,10 +226,10 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 				try {
 					int uid = getPackageManager().getApplicationInfo("biz.bokhorst.xprivacy.pro", 0).uid;
 					PrivacyManager.deleteRestrictions(this, uid);
-					Util.log(null, Log.INFO, "Licensing: check");
+					Util.log(Log.INFO, "Licensing: check");
 					startActivityForResult(new Intent("biz.bokhorst.xprivacy.pro.CHECK"), 0);
 				} catch (Throwable ex) {
-					Util.bug(null, ex);
+					Util.bug(ex);
 				}
 		} else {
 			Toast toast = Toast.makeText(this, getString(R.string.menu_pro), Toast.LENGTH_LONG);
@@ -260,7 +260,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 			else
 				sReason = Integer.toString(reason);
 
-			Util.log(null, Log.INFO, "Licensing: code=" + code + " reason=" + sReason);
+			Util.log(Log.INFO, "Licensing: code=" + code + " reason=" + sReason);
 
 			if (code > 0) {
 				mPro = true;
@@ -332,7 +332,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 				return super.onOptionsItemSelected(item);
 			}
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return true;
 		}
 	}
@@ -426,7 +426,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 		int xVersion = Util.getXposedVersion();
 		if (xVersion < PrivacyManager.cXposedMinVersion) {
 			String msg = String.format(getString(R.string.app_notxposed), PrivacyManager.cXposedMinVersion);
-			Util.log(null, Log.WARN, msg);
+			Util.log(Log.WARN, msg);
 
 			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 			alertDialog.setTitle(getString(R.string.app_name));
@@ -446,7 +446,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 		// Check if XPrivacy is enabled
 		if (!Util.isXposedEnabled()) {
 			String msg = getString(R.string.app_notenabled);
-			Util.log(null, Log.WARN, msg);
+			Util.log(Log.WARN, msg);
 
 			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 			alertDialog.setTitle(getString(R.string.app_name));
@@ -573,7 +573,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 					return true;
 			}
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 		return false;
 	}
@@ -583,7 +583,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 			clazz.getDeclaredField(fieldName);
 			return true;
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return false;
 		}
 	}
@@ -669,7 +669,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 						etSearch.setText(sb.toString());
 					}
 				} catch (Throwable ex) {
-					Util.bug(null, ex);
+					Util.bug(ex);
 				}
 			}
 		});
@@ -796,7 +796,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 			TextView tvVersion = (TextView) dlgAbout.findViewById(R.id.tvVersion);
 			tvVersion.setText(String.format(getString(R.string.app_version), pInfo.versionName, pInfo.versionCode));
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 
 		// Show Xposed version
@@ -847,7 +847,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 				throw new IOException(statusLine.getReasonPhrase());
 			}
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return ex.toString();
 		}
 	}
@@ -906,13 +906,13 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 		} catch (Throwable ex) {
 			Toast toast = Toast.makeText(ActivityMain.this, ex.toString(), Toast.LENGTH_LONG);
 			toast.show();
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 	}
 
 	private void reportClass(final Class<?> clazz) {
 		String msg = String.format("Incompatible %s", clazz.getName());
-		Util.log(null, Log.WARN, msg);
+		Util.log(Log.WARN, msg);
 
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle(getString(R.string.app_name));
@@ -977,7 +977,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 		try {
 			startActivity(sendEmail);
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 	}
 
@@ -1030,7 +1030,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 				for (PrivacyManager.RestrictionDesc restriction : listRestriction) {
 					String[] packages = getPackageManager().getPackagesForUid(restriction.uid);
 					if (packages == null)
-						Util.log(null, Log.WARN, "No packages for uid=" + restriction.uid);
+						Util.log(Log.WARN, "No packages for uid=" + restriction.uid);
 					else
 						for (String packageName : packages) {
 							publishProgress(packageName);
@@ -1054,7 +1054,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 				// Display message
 				return getString(R.string.msg_done);
 			} catch (Throwable ex) {
-				Util.bug(null, ex);
+				Util.bug(ex);
 				return ex.toString();
 			}
 		}
@@ -1173,14 +1173,14 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 										false);
 						}
 					} catch (NameNotFoundException ex) {
-						Util.log(null, Log.WARN, "Not found package=" + packageName);
+						Util.log(Log.WARN, "Not found package=" + packageName);
 					}
 				}
 
 				// Display message
 				return getString(R.string.msg_done);
 			} catch (Throwable ex) {
-				Util.bug(null, ex);
+				Util.bug(ex);
 				return ex.toString();
 			}
 		}
@@ -1278,7 +1278,7 @@ public class ActivityMain extends Activity implements OnItemSelectedListener, Co
 			try {
 				mProgressDialog.dismiss();
 			} catch (Throwable ex) {
-				Util.bug(null, ex);
+				Util.bug(ex);
 			}
 
 			// Enable filters

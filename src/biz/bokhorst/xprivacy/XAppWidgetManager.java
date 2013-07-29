@@ -17,7 +17,7 @@ public class XAppWidgetManager extends XHook {
 
 	@Override
 	protected void before(MethodHookParam param) throws Throwable {
-		if (isRestricted(param))
+		if (isRestricted())
 			param.setResult(new ArrayList<AppWidgetProviderInfo>());
 	}
 

@@ -41,7 +41,7 @@ public class XNetworkInterface extends XHook {
 			String methodName = param.method.getName();
 			NetworkInterface ni = (NetworkInterface) param.thisObject;
 			if (!ni.isLoopback())
-				if (isRestricted(param))
+				if (isRestricted())
 					if (methodName.equals("getHardwareAddress")) {
 						byte[] address = (byte[]) param.getResult();
 						byte[] defaced = PrivacyManager.getDefacedBytes();

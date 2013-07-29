@@ -58,7 +58,7 @@ public class XContentProvider extends XHook {
 
 			Cursor cursor = (Cursor) param.getResult();
 			if (cursor != null) {
-				if (isRestricted(param, mProviderName)) {
+				if (isRestricted(mProviderName)) {
 
 					// Google services provider: block only android_id
 					if (uri.toString().toLowerCase().startsWith("content://com.google.android.gsf.gservices")) {
@@ -76,7 +76,6 @@ public class XContentProvider extends XHook {
 		}
 	}
 
-	@Override
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		ContentProvider contentProvider = (ContentProvider) param.thisObject;
 		Context context = contentProvider.getContext();

@@ -18,8 +18,9 @@ import android.util.Log;
 
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import static de.robv.android.xposed.XposedHelpers.findField;
+import static de.robv.android.xposed.XposedHelpers.getObjectField;
 
-public class XTelephonyManager extends XHook {
+public class XTelephon yManager extends XHook {
 	private static final Map<PhoneStateListener, XPhoneStateListener> mListener = new WeakHashMap<PhoneStateListener, XPhoneStateListener>();
 
 	public XTelephonyManager(String methodName, String restrictionName, String[] permissions) {
@@ -104,30 +105,29 @@ public class XTelephonyManager extends XHook {
 						param.setResult(PrivacyManager.getDefacedProp(methodName));
 	}
 
-	@Override
+
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		Context context = null;
 
 		// TelephonyManager
 		try {
-			Field fieldContext = findField(param.thisObject.getClass(), "sContext");
-			context = (Context) fieldContext.get(param.thisObject);
+			context = (Context) getObjectField(param.thisObject, "sContext");
 		} catch (Throwable ex) {
-			Util.bug(this, ex);
+			Util.bug(XTelephonyManager.class, ex);
 		}
 
 		// MultiSimTelephonyManager
 		if (context == null)
 			try {
-				Field fieldContext = findField(param.thisObject.getClass(), "mContext");
-				context = (Context) fieldContext.get(param.thisObject);
+				context = (Context) getObjectField(param.thisObject, "mContext");
 			} catch (Throwable ex) {
-				Util.bug(this, ex);
+				Util.bug(XTelephonyManager.class, ex);
 			}
 
 		int uid = Binder.getCallingUid();
 		return getRestricted(context, uid, true);
 	}
+
 
 	private class XPhoneStateListener extends PhoneStateListener {
 		private PhoneStateListener mListener;

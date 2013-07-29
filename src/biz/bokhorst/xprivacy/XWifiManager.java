@@ -14,8 +14,94 @@ import static de.robv.android.xposed.XposedHelpers.findField;
 
 public class XWifiManager extends XHook {
 
-	public XWifiManager(String methodName, String restrictionName, String[] permissions) {
-		super(methodName, restrictionName, permissions, null);
+	private enum WifiTargets implements XHook.HookInfo {
+		NETWORKS("getConfiguredNetworks", PrivacyManager.cNetwork, new String[]{ "ACCESS_WIFI_STATE" }),
+		CONN_INFO("getConnectionInfo", PrivacyManager.cNetwork, new String[]{ "ACCESS_WIFI_STATE" }),
+		// This is to fake "offline", no permission required
+		CONN_INFO_INET("getConnectionInfo", PrivacyManager.cInternet, null),
+		DHCP_INFO("getDhcpInfo", PrivacyManager.cNetwork, new String[]{ "ACCESS_WIFI_STATE" }),
+		SCAN_RESULTS("getScanResults", PrivacyManager.cNetwork, new String[]{ "ACCESS_WIFI_STATE" }),
+		SCAN_RESULTS_LOC("getScanResults", PrivacyManager.cLocation, new String[]{ "ACCESS_WIFI_STATE" });
+		
+		private String methodName;
+		private String restrictionName;
+		private String[] permissions;
+
+		private WifiTargets(String methodName, String restrictionName, String[] permissions) {
+			this.methodName = methodName;
+			this.restrictionName = restrictionName;
+			this.permissions = permissions;
+		}
+
+		@Override
+		public String getMethodName() {
+			return methodName;
+		}
+
+		@Override
+		public String getRestrictionName() {
+			return restrictionName;
+		}
+
+		@Override
+		public String[] getPermissions() {
+			return permissions;
+		}
+
+		@Override
+		public String getSpecifier() {
+			return null;
+		}
+	}
+
+	WifiTargets hookTarget;
+	
+	private static Field fldSupplicantState;
+	private static Field fldBSSID;
+	private static Field fldIpAddress;
+	private static Field fldMacAddress;
+	private static Field fldSSID;
+	private static Field fldWifiSsid;
+
+	public static void installHooks() {
+		try {
+			fldSupplicantState = findField(WifiInfo.class, "mSupplicantState");
+		} catch (Throwable ex) {
+			Util.bug(XWifiManager.class, ex);
+		}
+		try {
+			fldBSSID = findField(WifiInfo.class, "mBSSID");
+		} catch (Throwable ex) {
+			Util.bug(XWifiManager.class, ex);
+		}
+		try {
+			fldIpAddress = findField(WifiInfo.class, "mIpAddress");
+		} catch (Throwable ex) {
+			Util.bug(XWifiManager.class, ex);
+		}
+		try {
+			fldMacAddress = findField(WifiInfo.class, "mMacAddress");
+		} catch (Throwable ex) {
+			Util.bug(XWifiManager.class, ex);
+		}
+		try {
+			fldSSID = findField(WifiInfo.class, "mSSID");
+		} catch (Throwable ex) {
+			try {
+				fldWifiSsid = findField(WifiInfo.class, "mWifiSsid");
+			} catch (Throwable exex) {
+				Util.bug(XWifiManager.class, ex);
+			}
+		}
+
+		for (WifiTargets target : WifiTargets.values()) {
+			XPrivacy.hook(new XWifiManager(target), "android.net.wifi.WifiManager");
+		}
+	}
+
+	private XWifiManager(WifiTargets target) {
+		super(target);
+		hookTarget = target;
 	}
 
 	// public List<WifiConfiguration> getConfiguredNetworks()
@@ -26,79 +112,64 @@ public class XWifiManager extends XHook {
 
 	@Override
 	protected void before(MethodHookParam param) throws Throwable {
-		if (param.method.getName().equals("getConfiguredNetworks")) {
-			if (isRestricted(param))
+		switch (hookTarget) {
+		case NETWORKS:
+			if (isRestricted())
 				param.setResult(new ArrayList<WifiConfiguration>());
-		} else if (param.method.getName().equals("getScanResults")) {
-			if (isRestricted(param))
+			break;
+		case SCAN_RESULTS:
+		case SCAN_RESULTS_LOC:
+			if (isRestricted())
 				param.setResult(new ArrayList<ScanResult>());
+			break;
+		default:
 		}
 	}
 
 	@Override
 	protected void after(MethodHookParam param) throws Throwable {
-		if (param.method.getName().equals("getConnectionInfo")) {
+		switch (hookTarget) {
+		case CONN_INFO:
+		case CONN_INFO_INET:
 			// frameworks/base/wifi/java/android/net/wifi/WifiInfo.java
 			WifiInfo wInfo = (WifiInfo) param.getResult();
 			if (wInfo != null)
-				if (isRestricted(param))
-					if (getRestrictionName().equals(PrivacyManager.cInternet)) {
+				if (isRestricted())
+					if (hookTarget.equals(WifiTargets.CONN_INFO_INET)) {
 						// Supplicant state
-						try {
-							Field fieldState = findField(WifiInfo.class, "mSupplicantState");
-							fieldState.set(wInfo, SupplicantState.DISCONNECTED);
-						} catch (Throwable ex) {
-							Util.bug(this, ex);
-						}
+						if (fldSupplicantState != null)
+							fldSupplicantState.set(wInfo, SupplicantState.DISCONNECTED);
 					} else {
 						// BSSID
-						try {
-							Field fieldBSSID = findField(WifiInfo.class, "mBSSID");
-							fieldBSSID.set(wInfo, PrivacyManager.getDefacedProp("MAC"));
-						} catch (Throwable ex) {
-							Util.bug(this, ex);
-						}
-
+						if (fldBSSID != null)
+							fldBSSID.set(wInfo, PrivacyManager.getDefacedProp("MAC"));
 						// IP address
-						try {
-							Field fieldIp = findField(WifiInfo.class, "mIpAddress");
-							fieldIp.set(wInfo, PrivacyManager.getDefacedInetAddress());
-						} catch (Throwable ex) {
-							Util.bug(this, ex);
-						}
-
+						if (fldIpAddress != null)
+							fldIpAddress.set(wInfo, PrivacyManager.getDefacedInetAddress());
 						// MAC address
-						try {
-							Field fieldMAC = findField(WifiInfo.class, "mMacAddress");
-							fieldMAC.set(wInfo, PrivacyManager.getDefacedProp("MAC"));
-						} catch (Throwable ex) {
-							Util.bug(this, ex);
-						}
-
+						if (fldMacAddress != null)
+							fldMacAddress.set(wInfo, PrivacyManager.getDefacedProp("MAC"));
 						// SSID
-						try {
-							Field fieldSSID = findField(WifiInfo.class, "mSSID");
-							fieldSSID.set(wInfo, PrivacyManager.getDefacedProp("SSID"));
-						} catch (Throwable ex) {
-							try {
-								Field fieldWifiSsid = findField(WifiInfo.class, "mWifiSsid");
-								fieldWifiSsid.set(wInfo, PrivacyManager.getDefacedProp("SSID"));
-							} catch (Throwable exex) {
-								Util.bug(this, exex);
-							}
-						}
+						if (fldSSID != null)
+							fldSSID.set(wInfo, PrivacyManager.getDefacedProp("SSID"));
+						else
+							if (fldWifiSsid != null)
+								fldWifiSsid.set(wInfo, PrivacyManager.getDefacedProp("SSID"));
 					}
-		} else if (param.method.getName().equals("getDhcpInfo")) {
+			break;
+		case DHCP_INFO:
 			// frameworks/base/core/java/android/net/DhcpInfo.java
 			DhcpInfo dInfo = (DhcpInfo) param.getResult();
 			if (dInfo != null)
-				if (isRestricted(param)) {
+				if (isRestricted()) {
 					dInfo.ipAddress = PrivacyManager.getDefacedIPInt();
 					dInfo.gateway = PrivacyManager.getDefacedIPInt();
 					dInfo.dns1 = PrivacyManager.getDefacedIPInt();
 					dInfo.dns2 = PrivacyManager.getDefacedIPInt();
 					dInfo.serverAddress = PrivacyManager.getDefacedIPInt();
 				}
+			break;
+		default:
 		}
 	}
 }

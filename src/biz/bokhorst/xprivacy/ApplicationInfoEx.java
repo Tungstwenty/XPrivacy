@@ -31,7 +31,7 @@ public class ApplicationInfoEx implements Comparable<ApplicationInfoEx> {
 		} catch (NameNotFoundException ex) {
 			mInstalled = false;
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return;
 		}
 	}
@@ -55,7 +55,7 @@ public class ApplicationInfoEx implements Comparable<ApplicationInfoEx> {
 			mInstalled = false;
 		} catch (Throwable ex) {
 			mInstalled = false;
-			Util.bug(null, ex);
+			Util.bug(ex);
 		}
 		mSystem = ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
 		mSystem = mSystem || appInfo.packageName.equals(ApplicationInfoEx.class.getPackage().getName());

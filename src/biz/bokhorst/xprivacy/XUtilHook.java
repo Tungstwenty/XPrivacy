@@ -13,7 +13,7 @@ public class XUtilHook extends XHook {
 
 	@Override
 	protected void before(MethodHookParam param) throws Throwable {
-		Util.log(this, Log.INFO, getMethodName() + "=true");
+		Util.log(this.getClass(), Log.INFO, getMethodName() + "=true");
 		param.setResult(true);
 	}
 

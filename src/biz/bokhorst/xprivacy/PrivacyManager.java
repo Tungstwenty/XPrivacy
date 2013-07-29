@@ -293,20 +293,20 @@ public class PrivacyManager {
 
 	public static void registerMethod(String methodName, String restrictionName, String[] permissions) {
 		if (restrictionName != null && !mPermissions.containsKey(restrictionName))
-			Util.log(null, Log.WARN, "Missing restriction " + restrictionName);
+			Util.log(Log.WARN, "Missing restriction " + restrictionName);
 
 		if (permissions != null) {
 			if (permissions.length == 0)
 				if (!mPermissions.get(restrictionName).contains(""))
-					Util.log(null, Log.WARN, "Missing no permission restriction=" + restrictionName);
+					Util.log(Log.WARN, "Missing no permission restriction=" + restrictionName);
 
 			for (String permission : permissions)
 				if (!mPermissions.get(restrictionName).contains(permission))
-					Util.log(null, Log.WARN, "Missing permission " + permission);
+					Util.log(Log.WARN, "Missing permission " + permission);
 		}
 
 		if (!mMethods.containsKey(restrictionName) || !mMethods.get(restrictionName).contains(methodName))
-			Util.log(null, Log.WARN, "Missing method " + methodName);
+			Util.log(Log.WARN, "Missing method " + methodName);
 	}
 
 	public static List<String> getRestrictions() {
@@ -393,7 +393,7 @@ public class PrivacyManager {
 						if (cursor == null) {
 							// Can happen if memory low
 							Util.log(hook, Log.WARN, "cursor is null");
-							Util.logStack(null);
+							Util.logStack();
 						} else {
 							// Get restriction
 							if (cursor.moveToNext()) {
@@ -402,7 +402,7 @@ public class PrivacyManager {
 								fallback = false;
 							} else {
 								Util.log(hook, Log.WARN, "cursor is empty");
-								Util.logStack(null);
+								Util.logStack();
 							}
 							cursor.close();
 						}
@@ -560,7 +560,7 @@ public class PrivacyManager {
 	public static void deleteRestrictions(Context context, int uid) {
 		context.getContentResolver().delete(PrivacyProvider.URI_RESTRICTION, null,
 				new String[] { Integer.toString(uid) });
-		Util.log(null, Log.INFO, "Deleted restrictions uid=" + uid);
+		Util.log(Log.INFO, "Deleted restrictions uid=" + uid);
 	}
 
 	// Usage
@@ -585,7 +585,7 @@ public class PrivacyManager {
 		for (String restrictionName : PrivacyManager.getRestrictions())
 			context.getContentResolver().delete(PrivacyProvider.URI_USAGE, restrictionName,
 					new String[] { Integer.toString(uid) });
-		Util.log(null, Log.INFO, "Deleted usage uid=" + uid);
+		Util.log(Log.INFO, "Deleted usage uid=" + uid);
 	}
 
 	// Settings
@@ -621,7 +621,7 @@ public class PrivacyManager {
 					if (cursor == null) {
 						// Can happen if memory low
 						Util.log(hook, Log.WARN, "cursor is null");
-						Util.logStack(null);
+						Util.logStack();
 					} else {
 						if (cursor.moveToNext()) {
 							value = cursor.getString(cursor.getColumnIndex(PrivacyProvider.COL_VALUE));
@@ -681,7 +681,7 @@ public class PrivacyManager {
 
 	public static void deleteSettings(Context context) {
 		context.getContentResolver().delete(PrivacyProvider.URI_SETTING, null, null);
-		Util.log(null, Log.INFO, "Deleted settings");
+		Util.log(Log.INFO, "Deleted settings");
 	}
 
 	// Defacing
@@ -761,7 +761,7 @@ public class PrivacyManager {
 			try {
 				gsfid = Long.parseLong(getSetting(null, null, cSettingGsfId, "DEFACE", true), 16);
 			} catch (Throwable ex) {
-				Util.bug(null, ex);
+				Util.bug(ex);
 			}
 			return gsfid;
 		}
@@ -776,7 +776,7 @@ public class PrivacyManager {
 			unspecified.setAccessible(true);
 			return (InetAddress) unspecified.get(Inet4Address.class);
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return null;
 		}
 	}
@@ -850,7 +850,7 @@ public class PrivacyManager {
 						} else if (rPermission.toLowerCase().contains(permission.toLowerCase()))
 							return true;
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug(ex);
 			return false;
 		}
 		return false;

@@ -45,7 +45,6 @@ public class XActivityManager extends XHook {
 		// Do nothing
 	}
 
-	@Override
 	protected boolean isRestricted(MethodHookParam param) throws Throwable {
 		Context context = null;
 		try {

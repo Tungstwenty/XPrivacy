@@ -23,21 +23,40 @@ import android.util.Log;
 
 public class Util {
 
+	public static void log(int priority, String msg) {
+		log((Class) null, priority, msg);
+	}
 	public static void log(XHook hook, int priority, String msg) {
-		if (priority != Log.DEBUG)
-			if (hook == null)
-				Log.println(priority, "XPrivacy", msg);
-			else
-				Log.println(priority, String.format("XPrivacy/%s", hook.getClass().getSimpleName()), msg);
+		log(hook.getClass(), priority, msg);
 	}
 
+	public static void log(Class<? extends XHook> hookCls, int priority, String msg) {
+		if (priority != Log.DEBUG)
+			if (hookCls == null)
+				Log.println(priority, "XPrivacy", msg);
+			else
+				Log.println(priority, String.format("XPrivacy/%s", hookCls.getSimpleName()), msg);
+	}
+
+	public static void bug(Throwable ex) {
+		bug((Class) null, ex);
+	}
 	public static void bug(XHook hook, Throwable ex) {
-		log(hook, Log.ERROR, ex.toString());
+		bug(hook.getClass(), ex);
+	}
+	public static void bug(Class<? extends XHook> hookCls, Throwable ex) {
+		log(hookCls, Log.ERROR, ex.toString());
 		ex.printStackTrace();
 	}
 
+	public static void logStack() {
+		logStack((Class) null);
+	}
 	public static void logStack(XHook hook) {
-		log(hook, Log.INFO, Log.getStackTraceString(new Exception("StackTrace")));
+		logStack(hook.getClass());
+	}
+	public static void logStack(Class<? extends XHook> hookCls) {
+		log(hookCls, Log.INFO, Log.getStackTraceString(new Exception("StackTrace")));
 	}
 
 	public static int getXposedVersion() {
@@ -65,7 +84,7 @@ public class Util {
 
 	public static boolean isXposedEnabled() {
 		// Will be hooked to return true
-		log(null, Log.WARN, "XPrivacy not enabled");
+		log((Class) null, Log.WARN, "XPrivacy not enabled");
 		return false;
 	}
 
@@ -90,24 +109,24 @@ public class Util {
 				byte[] bEmail = email.getBytes("UTF-8");
 				byte[] bSignature = hex2bytes(signature);
 				if (bEmail.length == 0 || bSignature.length == 0) {
-					Util.log(null, Log.ERROR, "Licensing: invalid file");
+					Util.log((Class) null, Log.ERROR, "Licensing: invalid file");
 					return null;
 				}
 
 				// Verify license
 				boolean licensed = verifyData(bEmail, bSignature, getPublicKey(context));
 				if (licensed)
-					Util.log(null, Log.INFO, "Licensing: ok for " + name + " (" + email + ")");
+					Util.log((Class) null, Log.INFO, "Licensing: ok for " + name + " (" + email + ")");
 				else
-					Util.log(null, Log.ERROR, "Licensing: invalid for " + name + " (" + email + ")");
+					Util.log((Class) null, Log.ERROR, "Licensing: invalid for " + name + " (" + email + ")");
 
 				// Return result
 				if (licensed)
 					return name;
 			} else
-				Util.log(null, Log.INFO, "Licensing: no license folder=" + Environment.getExternalStorageDirectory());
+				Util.log((Class) null, Log.INFO, "Licensing: no license folder=" + Environment.getExternalStorageDirectory());
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug((Class) null, ex);
 		}
 		return null;
 	}
@@ -120,13 +139,13 @@ public class Util {
 			Version vPro = new Version(pi.versionName);
 			if (pm.checkSignatures(context.getPackageName(), proPackageName) == PackageManager.SIGNATURE_MATCH
 					&& vPro.compareTo(new Version("1.4")) >= 0) {
-				Util.log(null, Log.INFO, "Licensing: enabler installed");
+				Util.log((Class) null, Log.INFO, "Licensing: enabler installed");
 				return true;
 			}
 		} catch (Throwable ex) {
-			Util.bug(null, ex);
+			Util.bug((Class) null, ex);
 		}
-		Util.log(null, Log.INFO, "Licensing: enabler not installed");
+		Util.log((Class) null, Log.INFO, "Licensing: enabler not installed");
 		return false;
 	}
 
@@ -137,7 +156,7 @@ public class Util {
 			if (installer != null)
 				return installer.equals("com.android.vending") || installer.contains("google");
 		} catch (Exception ex) {
-			log(null, Log.WARN, ex.toString());
+			log((Class) null, Log.WARN, ex.toString());
 		}
 		return false;
 	}

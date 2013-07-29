@@ -23,7 +23,7 @@ public class XInterfaceAddress extends XHook {
 		InetAddress address = (InetAddress) param.getResult();
 		if (address != null)
 			if (!(address.isAnyLocalAddress() || address.isLoopbackAddress()))
-				if (isRestricted(param))
+				if (isRestricted())
 					param.setResult(PrivacyManager.getDefacedInetAddress());
 	}
 }

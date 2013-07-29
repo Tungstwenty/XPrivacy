@@ -10,9 +10,21 @@ import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 
 public abstract class XHook {
 
+	interface HookInfo {
+		public String getMethodName();
+		public String getRestrictionName();
+		public String[] getPermissions();
+		public String getSpecifier();
+	}
+
+
 	private String mMethodName;
 	private String mRestrictionName;
 	private String mSpecifier;
+
+	public XHook(HookInfo hookInfo) {
+		this(hookInfo.getMethodName(), hookInfo.getRestrictionName(), hookInfo.getPermissions(), hookInfo.getSpecifier());
+	}
 
 	public XHook(String methodName, String restrictionName, String[] permissions, String specifier) {
 		// Sanity check
@@ -43,11 +55,11 @@ public abstract class XHook {
 
 	abstract protected void after(MethodHookParam param) throws Throwable;
 
-	protected boolean isRestricted(MethodHookParam param) throws Throwable {
-		return isRestricted(param, mMethodName);
+	protected boolean isRestricted() throws Throwable {
+		return isRestricted(mMethodName);
 	}
 
-	protected boolean isRestricted(MethodHookParam param, String methodName) throws Throwable {
+	protected boolean isRestricted(String methodName) throws Throwable {
 		int uid = Binder.getCallingUid();
 		Context context = AndroidAppHelper.currentApplication();
 		return PrivacyManager.getRestricted(this, context, uid, mRestrictionName, methodName, true, true);

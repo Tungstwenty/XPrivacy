@@ -18,7 +18,7 @@ public class XNetworkInfo extends XHook {
 
 	@Override
 	protected void before(MethodHookParam param) throws Throwable {
-		if (isRestricted(param)) {
+		if (isRestricted()) {
 			String methodName = param.method.getName();
 			if (methodName.equals("getDetailedState"))
 				param.setResult(NetworkInfo.DetailedState.DISCONNECTED);

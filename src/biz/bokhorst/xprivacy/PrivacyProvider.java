@@ -218,7 +218,7 @@ public class PrivacyProvider extends ContentProvider {
 			String restrictionName = values.getAsString(PrivacyProvider.COL_RESTRICTION);
 			String methodName = values.getAsString(COL_METHOD);
 			long timeStamp = values.getAsLong(PrivacyProvider.COL_USED);
-			Util.log(null, Log.INFO, String.format("Update usage data %d/%s/%s", uid, restrictionName, methodName));
+			Util.log(Log.INFO, String.format("Update usage data %d/%s/%s", uid, restrictionName, methodName));
 
 			// Update usage data
 			SharedPreferences uprefs = getContext().getSharedPreferences(PREF_USAGE, Context.MODE_PRIVATE);
@@ -295,7 +295,7 @@ public class PrivacyProvider extends ContentProvider {
 				if (pref.startsWith(prefix)) {
 					rows++;
 					editor.remove(pref);
-					Util.log(null, Log.INFO, "Removed audit=" + pref);
+					Util.log(Log.INFO, "Removed audit=" + pref);
 				}
 			editor.apply();
 			return rows;
@@ -306,7 +306,7 @@ public class PrivacyProvider extends ContentProvider {
 			for (String pref : prefs.getAll().keySet()) {
 				rows++;
 				editor.remove(pref);
-				Util.log(null, Log.INFO, "Removed setting=" + pref);
+				Util.log(Log.INFO, "Removed setting=" + pref);
 			}
 			editor.apply();
 			setPrefFileReadable(PREF_SETTINGS);

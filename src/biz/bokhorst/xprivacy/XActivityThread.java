@@ -54,7 +54,7 @@ public class XActivityThread extends XHook {
 							if (bundle != null) {
 								String phoneNumber = bundle.getString(Intent.EXTRA_PHONE_NUMBER);
 								if (phoneNumber != null)
-									if (isRestricted(param, mActionName))
+									if (isRestricted(mActionName))
 										intent.putExtra(Intent.EXTRA_PHONE_NUMBER,
 												(String) PrivacyManager.getDefacedProp("PhoneNumber"));
 							}
@@ -64,7 +64,7 @@ public class XActivityThread extends XHook {
 							if (bundle != null) {
 								String phoneNumber = bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
 								if (phoneNumber != null) {
-									if (isRestricted(param, mActionName))
+									if (isRestricted(mActionName))
 										intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER,
 												(String) PrivacyManager.getDefacedProp("PhoneNumber"));
 								}
@@ -72,7 +72,7 @@ public class XActivityThread extends XHook {
 						} else if (action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED)
 								|| action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)
 								|| action.equals(NfcAdapter.ACTION_TECH_DISCOVERED)) {
-							if (isRestricted(param, mActionName)) {
+							if (isRestricted(mActionName)) {
 								finish(param);
 								param.setResult(null);
 							}

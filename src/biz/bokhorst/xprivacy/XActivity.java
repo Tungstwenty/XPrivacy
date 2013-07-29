@@ -65,12 +65,12 @@ public class XActivity extends XHook {
 							if (scheme != null) {
 								scheme = scheme.toLowerCase();
 								if (scheme.equals("http") || scheme.equals("https"))
-									if (isRestricted(param, mActionName))
+									if (isRestricted(mActionName))
 										restricted = true;
 							}
 						}
 					} else
-						restricted = isRestricted(param, mActionName);
+						restricted = isRestricted(mActionName);
 
 					if (restricted) {
 						if (methodName.equals("startActivityIfNeeded"))

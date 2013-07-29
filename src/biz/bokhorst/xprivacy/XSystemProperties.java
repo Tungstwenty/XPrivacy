@@ -5,10 +5,22 @@ import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 public class XSystemProperties extends XHook {
 
 	private String mPropertyName;
+	private boolean isGetMethod;
 
-	public XSystemProperties(String methodName, String restrictionName, String[] permissions, String propertyName) {
+	public static void installHooks() {
+		String[] props = new String[] { "ro.gsm.imei", "net.hostname", "ro.serialno", "ro.boot.serialno",
+				"ro.boot.wifimacaddr", "ro.boot.btmacaddr" };
+		String[] getters = new String[] { "get", "getBoolean", "getInt", "getLong" };
+		for (String prop : props)
+			for (String getter : getters)
+				XPrivacy.hook(new XSystemProperties(getter, PrivacyManager.cIdentification, new String[] {}, prop),
+						"android.os.SystemProperties");
+	}
+	
+	private XSystemProperties(String methodName, String restrictionName, String[] permissions, String propertyName) {
 		super(methodName, restrictionName, permissions, propertyName);
 		mPropertyName = propertyName;
+		isGetMethod = methodName.equals("get");
 	}
 
 	// public static String get(String key)
@@ -22,8 +34,8 @@ public class XSystemProperties extends XHook {
 	protected void before(MethodHookParam param) throws Throwable {
 		String key = (String) param.args[0];
 		if (mPropertyName.equals(key))
-			if (isRestricted(param, mPropertyName))
-				if (param.method.getName().equals("get"))
+			if (isRestricted(mPropertyName))
+				if (isGetMethod)
 					param.setResult(PrivacyManager.getDefacedProp(mPropertyName));
 				else
 					param.setResult(param.args[1]);
